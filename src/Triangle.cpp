@@ -60,8 +60,29 @@ Vec3f barycentric(Vec2i *pts, const Vec2i &P)
 
     float u = uvVector.x / uvVector.z; // REAL U
     float v = uvVector.y / uvVector.z; // REAL V
-
     return Vec3f(1 - u - v, u, v);
+}
+
+Vec3f barycentric(Vec3f *pts, const Vec3f &P)
+{
+    // SAME
+    // A - pts[0] B - pts[1] C-pts[2]
+
+    Vec3f A = pts[0], B = pts[1], C = pts[2];
+    float denominator = (B.y - C.y) * (A.x - C.x) + (C.x - B.x) * (A.y - C.y);
+
+    if (std::abs(denominator) > 1e-6)
+    {
+        float alpha = ((B.y - C.y) * (P.x - C.x) + (C.x - B.x) * (P.y - C.y)) / denominator;
+        float beta = ((C.y - A.y) * (P.x - C.x) + (A.x - C.x) * (P.y - C.y)) / denominator;
+
+        return Vec3f(alpha, beta, 1 - alpha - beta);
+    }
+    else
+    {
+        // 处理分母为零的情况，例如返回一个特殊值
+        return Vec3f(-1, -1, -1); // 或者其他适当的值
+    }
 }
 
 bool isInTriangle(Vec2i *pts, const Vec2i &P)
@@ -70,24 +91,25 @@ bool isInTriangle(Vec2i *pts, const Vec2i &P)
     return (coefficient.x >= -0.1 && coefficient.y >= -0.1 && coefficient.z >= -0.1);
 }
 
+bool isInTriangle(Vec3f *pts, const Vec3f &P)
+{
+    Vec3f coefficient = barycentric(pts, P);
+    return (coefficient.x >= -0. && coefficient.y >= -0. && coefficient.z >= -0.);
+}
+
 void triangle(Vec2i *pts, TGAImage &image, const TGAColor color)
 {
     // step1 get boundary box
 
     Vec2i bboxMin(image.get_width() - 1, image.get_height() - 1);
     Vec2i bboxMax(0, 0);
-    bboxMin.x = std::min({ bboxMin.x, pts[0].x, pts[1].x, pts[2].x });//计算三角形的包围盒
-    bboxMin.y = std::min({ bboxMin.y, pts[0].y, pts[1].y, pts[2].y });
-    bboxMax.x = std::max({ bboxMax.x, pts[0].x, pts[1].x, pts[2].x });
-    bboxMax.y = std::max({ bboxMax.y, pts[0].y, pts[1].y, pts[2].y });
-
-    // int x_min = std::min(pts[2].x, std::min(pts[0].x, pts[1].x));
-    // int x_max = std::max(pts[2].x, std::max(pts[0].x, pts[1].x));
-    // int y_min = std::min(pts[2].y, std::min(pts[0].y, pts[1].y));
-    // int y_max = std::max(pts[2].y, std::max(pts[0].y, pts[1].y));
+    bboxMin.x = std::min({bboxMin.x, pts[0].x, pts[1].x, pts[2].x}); // 计算三角形的包围盒
+    bboxMin.y = std::min({bboxMin.y, pts[0].y, pts[1].y, pts[2].y});
+    bboxMax.x = std::max({bboxMax.x, pts[0].x, pts[1].x, pts[2].x});
+    bboxMax.y = std::max({bboxMax.y, pts[0].y, pts[1].y, pts[2].y});
 
     // loop set
-    for (int x =bboxMin.x; x <= bboxMax.x; ++x)
+    for (int x = bboxMin.x; x <= bboxMax.x; ++x)
     {
         for (int y = bboxMin.y; y <= bboxMax.y; ++y)
         {
@@ -99,15 +121,45 @@ void triangle(Vec2i *pts, TGAImage &image, const TGAColor color)
     }
 }
 
+void triangle(Vec3f *pts, float *zbuffer, TGAImage &image, Vec2i *texture, Model *model,const float light_ins)
+{
+    Vec2i bboxMin(image.get_width() - 1, image.get_height() - 1);
+    Vec2i bboxMax(0, 0);
+
+    bboxMin.x = std::min({bboxMin.x, static_cast<int>(pts[0].x), static_cast<int>(pts[1].x), static_cast<int>(pts[2].x)});
+    bboxMin.y = std::min({bboxMin.y, static_cast<int>(pts[0].y), static_cast<int>(pts[1].y), static_cast<int>(pts[2].y)});
+    bboxMax.x = std::max({bboxMax.x, static_cast<int>(pts[0].x), static_cast<int>(pts[1].x), static_cast<int>(pts[2].x)});
+    bboxMax.y = std::max({bboxMax.y, static_cast<int>(pts[0].y), static_cast<int>(pts[1].y), static_cast<int>(pts[2].y)});
+
+    for (int x = bboxMin.x; x <= bboxMax.x; ++x)
+    {
+        for (int y = bboxMin.y; y <= bboxMax.y; ++y)
+        {
+            Vec3f P(x, y, 0);
+            if (isInTriangle(pts, P))
+            {
+                Vec3f coefficient = barycentric(pts, P);
+                P.z = coefficient.x * pts[0].z + coefficient.y * pts[1].z + coefficient.z * pts[2].z; // z_interpolation < 0
+                if (P.z > zbuffer[static_cast<int>(x + image.get_width() * y)])
+                {
+                    zbuffer[static_cast<int>(x + image.get_width() * y)] = P.z; // update
+                    Vec2i P_uv = coefficient.x * texture[0] + coefficient.y * texture[1] + coefficient.z * texture[2];
+
+                    TGAColor color = model->diffuse(P_uv) * light_ins;
+                    color.a = 255. ;
+                    image.set(P.x, P.y, color);
+                }
+            }
+        }
+    }
+}
 
 Vec3f NormalOfTriangle(Vec3f *pts)
 {
-    Vec3f centroid = (pts[0]+pts[1]+pts[2]) /  3.f;
 
     // 计算两个边向量
     Vec3f edge1 = pts[1] - pts[0];
     Vec3f edge2 = pts[2] - pts[0];
-    
-    return (edge2 ^edge1).normalize();
+
+    return (edge2 ^ edge1).normalize();
 }
-   

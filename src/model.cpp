@@ -4,8 +4,9 @@
 #include <sstream>
 #include <vector>
 #include "model.h"
+#include "tgaimage.hpp"
 
-Model::Model(const char *filename) : verts_(), faces_() {
+Model::Model(const char *filename) : verts_(), faces_(), norms_(), uv_() {
     std::ifstream in;
     in.open (filename, std::ifstream::in);
     if (in.fail()) return;
@@ -19,35 +20,83 @@ Model::Model(const char *filename) : verts_(), faces_() {
             Vec3f v;
             for (int i=0;i<3;i++) iss >> v.raw[i];
             verts_.push_back(v);
-        } else if (!line.compare(0, 2, "f ")) {
-            std::vector<int> f;
-            int itrash, idx;
+        } 
+        else if(!line.compare(0, 3, "vt ")) {
+            iss >> trash >> trash;
+            Vec2f uv;
+            for (int i = 0; i < 2; i++) iss >> uv[i];
+            uv_.push_back(uv);
+        }
+        else if (!line.compare(0, 3, "vn ")) {
+            iss >> trash >> trash;
+            Vec3f normal;
+            for (int i = 0; i < 3; i++) iss >> normal[i];
+            norms_.push_back(normal);
+        }
+        else if (!line.compare(0, 2, "f ")) {
+            std::vector<Vec3i> f;
+            Vec3i tmp;
             iss >> trash;
-            while (iss >> idx >> trash >> itrash >> trash >> itrash) {
-                idx--; // in wavefront obj all indices start at 1, not zero
-                f.push_back(idx);
+            while (iss >> tmp[0] >> trash >> tmp[1] >> trash >> tmp[2]) {
+                for (int i = 0; i < 3; i++) tmp[i]--;
+                f.push_back(tmp);
             }
             faces_.push_back(f);
         }
     }
-    std::cerr << "# v# " << verts_.size() << " f# "  << faces_.size() << std::endl;
+    std::cerr << "# v# " << verts_.size() << " f# "  << faces_.size() << " vt# " << uv_.size() << " vn# " << norms_.size() << std::endl;
+    loadTexture(filename, "_diffuse.tga", this->diffuseMap_);
 }
 
-Model::~Model() {
+Model::~Model()
+{
 }
 
-int Model::nverts() {
+int Model::nverts()
+{
     return (int)verts_.size();
 }
 
-int Model::nfaces() {
+int Model::nfaces()
+{
     return (int)faces_.size();
 }
 
-std::vector<int> Model::face(int idx) {
-    return faces_[idx];
+std::vector<int> Model::face(int idx)
+{
+    std::vector<int> f;
+    std::vector<Vec3i> temp = faces_[idx];
+    for (int i = 0; i < temp.size(); ++i)
+    {
+        f.push_back(temp[i].x); // 0 号位存储的是 顶点索引
+    }
+    return f;
 }
 
 Vec3f Model::vert(int i) {
     return verts_[i];
+}
+
+void Model::loadTexture(std::string filename, const char* suffix, TGAImage& image)
+{
+    std::string texfile(filename);
+    size_t dot = texfile.find_last_of(".");
+    if (dot != std::string::npos) {
+        texfile = texfile.substr(0, dot) + std::string(suffix);
+        std::cerr << "texture file " << texfile << " loading " << (image.read_tga_file(texfile.c_str()) ? "ok" : "failed") << std::endl;
+        image.flip_vertically();
+    }
+}
+
+TGAColor Model::diffuse(Vec2i uv)
+{
+    // if(uv.x < 0) uv.x =0;
+    // if(uv.y < 0) uv.y =0;
+    return diffuseMap_.get(uv.x, uv.y);
+}
+
+Vec2i Model::uv(int iface, int nvert)
+{
+    int idx = faces_[iface][nvert][1];
+    return Vec2i(uv_[idx].x * diffuseMap_.get_width(), uv_[idx].y * diffuseMap_.get_height());
 }

@@ -1,3 +1,4 @@
+# pragma once
 #ifndef __IMAGE_H__
 #define __IMAGE_H__
 
@@ -65,6 +66,14 @@ struct TGAColor
 			bytespp = c.bytespp;
 			val = c.val;
 		}
+		return *this;
+	}
+
+	TGAColor& operator*(const float ins)
+	{
+		this->r *= ins;
+		this->g *= ins;
+		this->b *= ins;
 		return *this;
 	}
 };
