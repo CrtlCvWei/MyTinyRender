@@ -1,6 +1,47 @@
 #include "Triangle.hpp"
 #include "LineDraw.hpp"
 
+Triangle::Triangle() : pts{Vec4f(), Vec4f(), Vec4f()},
+                       normals{Vec3f(0., 0., 0.), Vec3f(0., 0., 0.), Vec3f(0., 0., 0.)},
+                       uv{Vec2f(), Vec2f(), Vec2f()},
+                       color{TGAColor(), TGAColor(), TGAColor()}
+{
+}
+
+Triangle::Triangle(Triangle &t)
+{
+    for (size_t i = 0; i < 3; ++i)
+    {
+        pts[i] = t.pts[i];
+        normals[i] = t.normals[i];
+        uv[i] = t.uv[i];
+        color[i] = t.color[i];
+    }
+}
+
+Triangle::Triangle(Vec4f *pts, Vec3f *normals, Vec2f *uv, TGAColor *color) : pts{pts[0], pts[1], pts[2]},
+                                                                             normals{normals[0], normals[1], normals[2]},
+                                                                             uv{uv[0], uv[1], uv[2]},
+                                                                             color{color[0], color[1], color[2]}
+{
+}
+
+std::array<Vec3f, 3> Triangle::to_vec3()
+{
+    std::array<Vec3f, 3> res;
+    for (size_t i = 0; i < 3; ++i)
+    {
+        if (pts[i].w != 0.0f)
+        {
+            // std::cerr << "Error: the point is not in the homogeneous coordinate system\n";
+            res[i] = Vec3f(pts[i].x / pts[i].w, pts[i].y / pts[i].w, pts[i].z / pts[i].w);
+        }
+        else
+            res[i] = Vec3f(pts[i].x, pts[i].y, pts[i].z);
+    }
+    return res;
+}
+
 void triangle_OldSchool(Vec2i &v1, Vec2i &v2, Vec2i &v3, TGAImage &image, const TGAColor color)
 {
     Vec2i temp = Vec2i();
@@ -121,7 +162,7 @@ void triangle(Vec2i *pts, TGAImage &image, const TGAColor color)
     }
 }
 
-void triangle(Vec3f *pts, float *zbuffer, TGAImage &image, Vec2i *texture, Model *model,const float light_ins)
+void triangle(Vec3f *pts, float *zbuffer, TGAImage &image, Vec2i *texture, Model *model, const float light_ins)
 {
     Vec2i bboxMin(image.get_width() - 1, image.get_height() - 1);
     Vec2i bboxMax(0, 0);
@@ -145,8 +186,8 @@ void triangle(Vec3f *pts, float *zbuffer, TGAImage &image, Vec2i *texture, Model
                     zbuffer[static_cast<int>(x + image.get_width() * y)] = P.z; // update
                     Vec2i P_uv = coefficient.x * texture[0] + coefficient.y * texture[1] + coefficient.z * texture[2];
 
-                    TGAColor color = model->diffuse(P_uv) * light_ins;
-                    color.a = 255. ;
+                    TGAColor color = TGAColor(255, 255, 255, 255) * light_ins;
+                    color.a = 255.;
                     image.set(P.x, P.y, color);
                 }
             }

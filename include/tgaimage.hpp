@@ -76,6 +76,14 @@ struct TGAColor
 		this->b *= ins;
 		return *this;
 	}
+
+	TGAColor& operator+(const TGAColor& ins)
+	{
+		this->r += ins.r;
+		this->g += ins.g;
+		this->b += ins.b;
+		return *this;
+	}
 };
 
 #define WHITE  TGAColor(255, 255, 255, 255)

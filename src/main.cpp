@@ -4,58 +4,50 @@
 #include "LineDraw.hpp"
 #include "model.h"
 #include "Triangle.hpp"
+#include "geometry.hpp"
+#include "Rasterizer.hpp"
+#include "MyShader.hpp"
+#include "MyCamera.hpp"
 
 const int width = 800;
 const int height = 800;
 
-Vec3f world2screen(Vec3f v)
+Vec3f lightDir(0, 0, -1); // 平行光方向
+
+Vec3f eye_position(-1.f, 1.f, 4.f);
+Vec3f center(0.f, 0.f, 0.f);//
+Vec3f Up(0.f, 1.f, 0.f);//相机向上的方向
+
+float fovy = 90.f;   // 视野角度
+float aspect = 1.f; // 宽高比
+float zNear = 1.f;  // 近裁剪面
+float zFar = 1/3.f;   // 远裁剪面
+
+
+MyMtrix::Matrix modelMatrix()
 {
-        return Vec3f(int((v.x + 1.) * width / 2. + .5), int((v.y + 1.) * height / 2. + .5), v.z);
+        return MyMtrix::Matrix::identity(4);
 }
 
-void makeModel(Model *model, int width, int height)
+MyCamera::Camera* camera = new MyCamera::Camera(eye_position, center, Up, fovy, aspect, zNear, zFar);
+
+// Some Shader Function
+Vec3f vertex_shader(const MyShader::VertexShader &payload)
 {
-        TGAImage image = TGAImage(width, height, TGAImage::Format::RGB);
-        float *zbuffer = new float[width * height];
-        for (int i = width * height; i--; zbuffer[i] = -std::numeric_limits<float>::max());
+        return payload.position;
+}
 
-        for (int i = 0; i < model->nfaces(); i++)
-        {
-                std::vector<int> face = model->face(i); //
-                Vec3f screen_coords[3];
-                Vec3f world_coords[3];
-                Vec2i textures[3];
-                Vec3f Light{-1, 0, -1};
-                Vec3f View{0, 0, -1};
+Vec3f normal_fragment_shader(MyShader::FragmentShader &payload)
+{
+        Vec3f return_color = (payload.normal.normalize() + Vec3f(1.0f, 1.0f, 1.0f)) / 2.f;
+        Vec3f result(return_color.x * 255, return_color.y * 255, return_color.z * 255);
+        return result;
+}
 
-                for (int j = 0; j < 3; j++)
-                {
-                        world_coords[j] = model->vert(face[j]);
-                        screen_coords[j] = world2screen(world_coords[j]);
-                        std::cout << screen_coords[j].z <<std::endl;
-                        textures[j] = model->uv(i, j);
-                }
-
-                if (Light * NormalOfTriangle(world_coords) > 0)
-                {
-                        float La = 0.0f; // 环境光照
-
-                        float Ld = std::max(0.f, Light.normalize() * NormalOfTriangle(world_coords));
-
-                        Vec3f h = (Light + View).normalize();
-                        float Ls = std::pow(std::max(0.f, h * NormalOfTriangle(world_coords)), 1);
-                        float light_ins = Ld + Ls + La;
-                        if (light_ins > 0)
-                        {
-                                // triangle(screen_coords, zbuffer, image, textures, model, (Ld + Ls + La));
-                                triangle(screen_coords, zbuffer, image, textures, model, light_ins);
-                        }
-                }
-        }
-        image.flip_vertically(); // i want to have the origin at the left bottom corner of the image
-        image.write_tga_file("output.tga");
-        delete model;
-        return;
+Vec3f Flat_shader(MyShader::FragmentShader &payload)
+{
+        Vec3f return_color = (payload.normal.normalize() + Vec3f(1.0f, 1.0f, 1.0f)) / 2.f;
+        return return_color;
 }
 
 int main(int argc, char **argv)
@@ -71,7 +63,56 @@ int main(int argc, char **argv)
                 model = new Model("obj/african_head.obj");
         }
 
-        makeModel(model, width, height);
+        // makeModel(model, width, height);
+        TGAImage image(width, height, TGAImage::Format::RGB);
+        // 创建光栅化对象
+        rst::rasterizer r(width, height, camera);
 
+        // 清空帧缓冲和zBuffer
+        r.clear(rst::Buffers::Color);
+        r.clear(rst::Buffers::Depth);
+
+        // 存储所有需要绘制的三角形面片
+        // model->getTriangles();
+
+        // 给定纹理并设置
+        std::string _diffuse = "obj/african_head_diffuse.tga";
+        Texture *tex = new Texture(_diffuse);
+        r.set_texture(tex);
+
+        // 清空帧缓冲和zBuffer
+        r.clear(rst::Buffers::Color);
+        r.clear(rst::Buffers::Depth);
+
+        // 设置MVP矩阵
+        r.set_model(modelMatrix());
+
+        // 设置顶点着色器和片元着色器
+        r.set_vertexShader(vertex_shader);
+        r.set_fragmentShader(normal_fragment_shader);
+
+        try
+        {
+                r.draw(model->getTriangles());
+        }
+        catch (const std::exception &e)
+        {
+                std::cerr << e.what() << '\n';
+        }
+
+        std::vector<Vec3f> &frame_buffer = r.getFrameBuffer();
+        // 将帧缓冲中的颜色值写入image中
+        for (int i = 0; i < width; i++)
+        {
+                for (int j = 0; j < height; j++)
+                {
+                        Vec3f color = frame_buffer[j * width + i];
+                        image.set(i, j, TGAColor(color.x, color.y, color.z, 255));
+                }
+        }
+        image.flip_vertically();
+        image.write_tga_file("output.tga");
+
+        delete model;
         return 0;
 }
