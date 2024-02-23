@@ -8,6 +8,11 @@ MyMtrix::Matrix MyCamera::Camera::MVMatrix()
         return projectionMatrix * viewMatrix;
 }
 
+MyMtrix::Matrix MyCamera::Camera::MITMatrix() const // 逆转置矩阵
+{
+        return MIT;
+}
+
 MyMtrix::Matrix MyCamera::Camera::ViewPort(int x, int y, int w, int h, float depth)
 {
         // ref from OpenGL

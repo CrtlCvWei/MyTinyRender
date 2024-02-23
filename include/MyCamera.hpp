@@ -21,6 +21,7 @@ namespace MyCamera
 
         MyMtrix::Matrix viewMatrix;
         MyMtrix::Matrix projectionMatrix;
+        MyMtrix::Matrix MIT;
 
     protected:
         MyMtrix::Matrix LookAt(Vec3f eye, Vec3f center, Vec3f up); // 视图矩阵
@@ -33,6 +34,7 @@ namespace MyCamera
         {
             viewMatrix = LookAt(eye_position, center, Up);
             projectionMatrix = Perspective(fovy, aspect, zNear, zFar);
+            MIT = (projectionMatrix * viewMatrix).inverse().transpose();
         }
 
         Camera(const Vec3f &eye, const Vec3f &c, const Vec3f &u) : eye_position(eye), center(c), Up(u),
@@ -40,6 +42,7 @@ namespace MyCamera
         {
             viewMatrix = LookAt(eye_position, center, Up);
             projectionMatrix = Perspective(fovy, aspect, zNear, zFar);
+            MIT = (projectionMatrix * viewMatrix).inverse().transpose();
         }
 
         Camera(const Vec3f &eye, const Vec3f &c, const Vec3f &u, const float fovy, const float aspect, const float zNear, const float zFar) : eye_position(eye), center(c), Up(u),
@@ -47,6 +50,7 @@ namespace MyCamera
         {
             viewMatrix = LookAt(eye_position, center, Up);
             projectionMatrix = Perspective(fovy, aspect, zNear, zFar);
+            MIT = (projectionMatrix * viewMatrix).inverse().transpose();
         }
 
         MyMtrix::Matrix getViewMatrix() const
@@ -60,6 +64,8 @@ namespace MyCamera
         }
 
         MyMtrix::Matrix MVMatrix(); // ModelView Matrix
+
+        MyMtrix::Matrix MITMatrix() const; // 逆转置矩阵
 
         MyMtrix::Matrix ViewPort(int x, int y, int w, int h, float depth = 255.f); // 3D场景坐标转换为屏幕坐标
     };

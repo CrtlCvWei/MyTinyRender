@@ -27,8 +27,8 @@ public:
         height = image_data.get_height();
     }
 
-    TGAColor getColor(float u, float v) { return image_data.get(u, v); }
-    TGAColor getColor(Vec2f uv) { return image_data.get(uv.u, uv.v); }
+    TGAColor getColor(float u, float v) { return image_data.get(u * width , v * height); }
+    TGAColor getColor(Vec2f uv) { return image_data.get(uv.u * width, uv.v * height); }
 
     Vec3f getColorBilinear(float u, float v);
 };

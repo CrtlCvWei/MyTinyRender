@@ -127,15 +127,16 @@ Vec4f MyMtrix::Matrix::to_vec4()
 	return Vec4f{m[0][0], m[1][0], m[2][0], m[3][0]};
 }
 
-MyMtrix::Matrix MyMtrix::toHomoCoordinate(Vec3f v)
+MyMtrix::Matrix MyMtrix::toHomoCoordinate(Vec3f v , float w = 1.f)
 {
 	MyMtrix::Matrix temp(4, 1);
 	temp[0][0] = v.x;
 	temp[1][0] = v.y;
 	temp[2][0] = v.z;
-	temp[3][0] = 1.f;
+	temp[3][0] = w;
 	return temp;
 }
+
 
 MyMtrix::Matrix MyMtrix::toMatrix(Vec4f v)
 {
@@ -154,4 +155,57 @@ MyMtrix::Matrix MyMtrix::toMatrix(Vec3f v)
 	m[1][0] = v.y;
 	m[2][0] = v.z;
 	return m;
+}
+
+// 计算行列式
+template <int n>
+struct dt
+{
+	static double det(const MyMtrix::Matrix &src)
+	{
+		double ret = 0;
+		for (int i = n; i--; ret += src[0][i] * src.cofactor(0, i))
+			;
+		return ret;
+	}
+};
+
+float MyMtrix::Matrix::det() const
+{
+	assert(rows == cols);
+	if (rows == 1)
+		return m[0][0];
+	float ret = 0;
+	for (int i = cols; i--; ret += this->m[0][i] * this->cofactor(0, i))
+		;
+	return ret;
+}
+
+MyMtrix::Matrix MyMtrix::Matrix::get_minor(const int row, const int col) const
+{
+	MyMtrix::Matrix ret(rows - 1, cols - 1);
+	for (int i = rows - 1; i--;)
+		for (int j = cols - 1; j--; ret[i][j] = m[i < row ? i : i + 1][j < col ? j : j + 1]);
+	return ret;
+}
+MyMtrix::Matrix MyMtrix::Matrix::adjugate() const
+{
+	MyMtrix::Matrix ret(rows, cols);
+	for (int i = rows; i--;)
+		for (int j = cols; j--; ret[i][j] = cofactor(i, j))
+			;
+	return ret;
+}
+
+MyMtrix::Matrix MyMtrix::Matrix::invert_transpose() const
+{
+	MyMtrix::Matrix ret = adjugate();
+
+	auto dot_product = [](const auto &lhs, const auto &rhs)
+	{
+		double ret = 0;
+		for (int i = lhs.size(); i--; ret += lhs[i] * rhs[i]);
+		return ret;
+	};
+	return ret / dot_product(ret[0], m[0]);
 }

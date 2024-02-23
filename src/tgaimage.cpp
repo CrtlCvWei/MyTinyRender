@@ -258,7 +258,7 @@ TGAColor TGAImage::get(int x, int y) {
 		if(!data) std::cout << "!data" << std::endl;
 		return TGAColor();
 	}
-	return TGAColor(data+(x+y*width)*bytespp, bytespp);
+	return TGAColor(data+ (int)(x+y*width)*bytespp, bytespp);
 }
 
 bool TGAImage::set(int x, int y, TGAColor c) {
