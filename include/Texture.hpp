@@ -29,7 +29,16 @@ public:
 
     TGAColor getColor(float u, float v) { return image_data.get(u * width , v * height); }
     TGAColor getColor(Vec2f uv) { return image_data.get(uv.u * width, uv.v * height); }
-
+    Vec3f getNorm(float u, float v)
+    {
+        auto temp = image_data.get(u * width, v * height);
+        return Vec3f(temp.r / 255. * 2 - 1, temp.g / 255. * 2 - 1, temp.b / 255. * 2 - 1);
+    }
+    float getSpec(float u, float v)
+    {
+        Vec2i uvi(u * width, v * height);
+        return image_data.get(uvi[0], uvi[1]).b / 1.0f;
+    }
     Vec3f getColorBilinear(float u, float v);
 };
 #endif // RASTERIZER_TEXTURE_H

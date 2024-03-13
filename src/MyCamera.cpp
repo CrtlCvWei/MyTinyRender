@@ -3,14 +3,17 @@
 
 #define PI 3.14159265358979323846
 
-MyMtrix::Matrix MyCamera::Camera::MVMatrix()
+MyMtrix::Matrix MyCamera::Camera::GetMVMatrix()
 {
         return projectionMatrix * viewMatrix;
 }
 
-MyMtrix::Matrix MyCamera::Camera::MITMatrix() const // 逆转置矩阵
+MyMtrix::Matrix MyCamera::Camera::GetMITMatrix() const // 逆转置矩阵
 {
         return MIT;
+}
+MyMtrix::Matrix MyCamera::Camera::GetMshadow() const{
+        return uniform_Mshadow.value();
 }
 
 MyMtrix::Matrix MyCamera::Camera::ViewPort(int x, int y, int w, int h, float depth)
@@ -30,7 +33,7 @@ MyMtrix::Matrix MyCamera::Camera::ViewPort(int x, int y, int w, int h, float dep
 MyMtrix::Matrix MyCamera::Camera::LookAt(Vec3f eye, Vec3f center, Vec3f up)
 {
         // View Matrix
-        Vec3f v = (eye - center).normalize(); // 
+        Vec3f v = (eye - center).normalize(); //
         Vec3f u = (up ^ v).normalize();
         Vec3f w = (v ^ u).normalize(); // 修正叉乘顺序并归一化
         MyMtrix::Matrix R = MyMtrix::Matrix::identity(4);
@@ -55,11 +58,9 @@ MyMtrix::Matrix MyCamera::Camera::Perspective(float fovy, float aspect, float zN
         zNear = -zNear;
 
         float t = std::abs(std::atan(fovy * PI / 180 / 2) * zNear); // 计算 top
-        float b = -t;                                      // 计算 bottom
-        float r = t * aspect;                              // 计算 right
-        float l = -r;                                      // 计算 left
-
-       
+        float b = -t;                                               // 计算 bottom
+        float r = t * aspect;                                       // 计算 right
+        float l = -r;                                               // 计算 left
 
         MyMtrix::Matrix m = MyMtrix::Matrix::identity(4);
 
@@ -72,12 +73,12 @@ MyMtrix::Matrix MyCamera::Camera::Perspective(float fovy, float aspect, float zN
         // // Z_{c} = m[2][2] * Z_{e} + m[2][3]
         // // m[2][2] = -(zFar + zNear) / (zFar - zNear);
         // m[2][3] = -2 * zFar * zNear / (zFar - zNear);
+        if (type == Perspe)
+                m[3][2] = -1. / (eye_position - center).norm();
+        else if (type == Orth)
+                m[3][2] = 0;
 
-
-
-
-        m[3][2] = -1 / eye_position.z;
-        m[3][3] = 1  ;
+        m[3][3] = 1;
 
         return m;
 }

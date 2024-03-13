@@ -209,3 +209,8 @@ MyMtrix::Matrix MyMtrix::Matrix::invert_transpose() const
 	};
 	return ret / dot_product(ret[0], m[0]);
 }
+
+MyMtrix::Matrix MyMtrix::Matrix::invert() const
+{
+	return invert_transpose().transpose();
+}

@@ -204,7 +204,7 @@ namespace MyMtrix
 {
 	class Matrix
 	{
-	private:
+	protected:
 		std::vector<std::vector<float>> m;
 		int rows, cols;
 
@@ -217,22 +217,35 @@ namespace MyMtrix
 		Vec4f to_vec4();
 
 		static Matrix identity(int dimensions);
-		std::vector<float> &operator[](const int i);	
+		std::vector<float> &operator[](const int i);
 		Matrix operator*(const Matrix &a);
 		Matrix operator/(const float a);
 		Matrix transpose();
 		Matrix inverse();
 
-		Matrix get_minor(const int row, const int col) const ;
+		Matrix get_minor(const int row, const int col) const;
 		float det() const;
-		float cofactor(const int row, const int col) const {
-        	return get_minor(row, col).det() * ((row + col) % 2 ? -1 : 1);
+		float cofactor(const int row, const int col) const
+		{
+			return get_minor(row, col).det() * ((row + col) % 2 ? -1 : 1);
 		}
 
 		Matrix adjugate() const;
 		Matrix invert_transpose() const;
+		Matrix invert() const;
 
-		friend std::ostream &operator<<(std::ostream &s, Matrix &m);
+		friend std::ostream &operator<<(std::ostream &s, Matrix &m)
+		{
+			for (const auto &row : m.m)
+			{
+				for (const auto &ele : row)
+				{
+					s << ele << " ";
+				}
+				s << std::endl;
+			}
+			return s;
+		};
 	};
 
 	Matrix toHomoCoordinate(Vec3f v, float w);
@@ -250,7 +263,5 @@ namespace MyMtrix
 // 	m[2][0] = v.z;
 // 	return m;
 // }
-
-
 
 #endif //__GEOMETRY_H__
