@@ -24,8 +24,14 @@ Vec3f MyShader::depth_shading(MyShader::FragmentShader *payload)
     if (payload->GetClassName() == MyShader::Deep)
     {
         auto dpayload = dynamic_cast<MyShader::DeepFragmentShader *>(payload);
-        if(dpayload->depth_buffer)
-            dpayload->depth_buffer->at(static_cast<int>(payload->vex.x) + static_cast<int>(payload->vex.y) * dpayload->width) = payload->vex.z;
+        if (dpayload->depth_buffer)
+        {
+            int idx = static_cast<int>(payload->vex.x) + static_cast<int>(payload->vex.y) * dpayload->width;
+            if(!dpayload->MSAA)
+                dpayload->depth_buffer->at(idx) = payload->vex.z;
+            else
+                dpayload->depth_buffer->at(payload->MSAA_index + payload->MSAA_sample * idx) = payload->vex.z;
+        }
     }
     float deep = std::clamp(payload->vex.z / 255.f, 0.f, 1.f);
     Vec3f return_color = Vec3f(255, 255, 255) * deep;
@@ -101,12 +107,13 @@ Vec3f MyShader::Blinn_Phong(MyShader::FragmentShader *payload)
 Vec3f MyShader::Blinn_Phong_With_ShadowMapping(MyShader::FragmentShader *payload)
 {
     float shadow = 0;
+    
     MyShader::DeepFragmentShader *dpayload = dynamic_cast<MyShader::DeepFragmentShader *>(payload);
     MyMtrix::Matrix sb_p_matrix = dpayload->uniform_Mshadow * MyMtrix::toHomoCoordinate(payload->vex, 1.f);
     auto sb_vec4 = (sb_p_matrix / sb_p_matrix[3][0]).to_vec4();
-     // index in the shadowbuffer array
-    int idx = int(sb_vec4[0]) + dpayload->width * int(sb_vec4[1]);
-
+    // index in the shadowbuffer array
+    int idx = int(sb_vec4[0]) + dpayload->width * int(sb_vec4[1]) ;
+    idx = payload->MSAA ?  payload->MSAA_sample * idx + payload->MSAA_index : idx;
 
     if (idx > dpayload->depth_buffer->size() - 1)
     {
@@ -114,7 +121,7 @@ Vec3f MyShader::Blinn_Phong_With_ShadowMapping(MyShader::FragmentShader *payload
     }
     else
     {
-        shadow = .3 + .7 * (dpayload->depth_buffer->at(idx) < sb_vec4[2] + 42.f);
+        shadow = .3 + .7 * (dpayload->depth_buffer->at(idx) < sb_vec4[2] +43.34f); //  a magic number
     }
     auto return_color = MyShader::Blinn_Phong(payload);
     for (size_t i = 0; i < 3; ++i)

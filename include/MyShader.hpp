@@ -34,6 +34,10 @@ namespace MyShader
 
         Vec3f lightDir;
 
+        bool MSAA = false;
+        int MSAA_sample = 4;
+        int MSAA_index = 0;
+
         virtual FragmentShaderClass GetClassName()
         {
             return Base;
@@ -56,6 +60,20 @@ namespace MyShader
             specular_map = sp;
         }
 
+        void set_msaa(bool msaa)
+        {
+            MSAA = msaa;
+        }
+
+        void set_msaa_sample(int sample)
+        {
+            MSAA_sample = sample;
+        }
+
+        void set_msaa_index(int index)
+        {
+            MSAA_index = index;
+        }
         ~FragmentShader(){};
     };
 
@@ -79,7 +97,7 @@ namespace MyShader
             uniform_Mshadow = mshadow;
         }
 
-        virtual FragmentShaderClass GetClassName()
+        virtual FragmentShaderClass GetClassName() override
         {
             return Deep;
         }

@@ -49,11 +49,11 @@ int main(int argc, char **argv)
         rst::rasterizer r(width, height, camera,lightDir);
         
         std::function<Vec4f(MyShader::VertexShader*,MyMtrix::Matrix)> VertexShader = MyShader::vertex_shader;     // 顶点着色器
-        std::function<Vec3f(MyShader::FragmentShader*)> FragmentShader = MyShader::Blinn_Phong; // 片元着色器
-        // r.set_depth_buffer(depth_buffer_shadow);
+        std::function<Vec3f(MyShader::FragmentShader*)> FragmentShader = MyShader::Blinn_Phong_With_ShadowMapping; // 片元着色器
+        r.set_depth_buffer(depth_buffer_shadow);
 
 
-
+        r.SetMASS(true);
         // 存储所有需要绘制的三角形面片
         // model->getTriangles();
 
@@ -106,7 +106,7 @@ int main(int argc, char **argv)
                 }
         }
         image.flip_vertically();
-        image.write_tga_file("output.tga");
+        image.write_tga_file("output_shadow.tga");
 
         delete model;
         return 0;

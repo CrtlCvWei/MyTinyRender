@@ -37,7 +37,7 @@ public:
     float getSpec(float u, float v)
     {
         Vec2i uvi(u * width, v * height);
-        return image_data.get(uvi[0], uvi[1]).b / 1.0f;
+        return image_data.get(uvi[0], uvi[1]).b;
     }
     Vec3f getColorBilinear(float u, float v);
 };

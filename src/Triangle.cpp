@@ -126,16 +126,23 @@ Vec3f barycentric(Vec3f *pts, const Vec3f &P)
     }
 }
 
-bool isInTriangle(Vec2i *pts, const Vec2i &P)
+bool isInTriangle(Vec2i *pts, const Vec2i &P,const bool MSAA)
 {
     Vec3f coefficient = barycentric(pts, P);
-    return (coefficient.x >= -0.1 && coefficient.y >= -0.1 && coefficient.z >= -0.1);
+    if (MSAA)
+        return (coefficient.x >= -0.2 && coefficient.y >= -0.2 && coefficient.z >= -0.2);
+    else
+        return (coefficient.x >= -0.1 && coefficient.y >= -0.1 && coefficient.z >= -0.1);
 }
 
-bool isInTriangle(Vec3f *pts, const Vec3f &P)
+bool isInTriangle(Vec3f *pts, const Vec3f &P, const bool MSAA)
 {
     Vec3f coefficient = barycentric(pts, P);
-    return (coefficient.x >= -0. && coefficient.y >= -0. && coefficient.z >= -0.);
+    float thred = -0.1f;
+    if (MSAA)
+        return (coefficient.x >= thred && coefficient.y >= thred && coefficient.z >= thred);
+    else
+        return (coefficient.x >= -0.1f && coefficient.y >= -0.1f && coefficient.z >= -0.1f);
 }
 
 void triangle(Vec2i *pts, TGAImage &image, const TGAColor color)

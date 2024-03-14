@@ -193,9 +193,22 @@ inline Vec3<T> operator*(const float f, const Vec3<T> &vec)
 }
 
 template <typename T>
+inline bool operator==(const Vec3<T> &vec1, const Vec3<T> &vec2)
+{
+	return (vec1.x == vec2.x && vec1.y == vec2.y && vec1.z == vec2.z);
+}
+
+
+template <typename T>
 inline Vec4<T> operator*(const float f, const Vec4<T> &vec)
 {
 	return vec * f;
+}
+
+template <typename T>
+inline Vec4<T> operator==(const Vec4<T> &vec1, const Vec4<T> &vec2)
+{
+	return (vec1.x == vec2.x && vec1.y == vec2.y && vec1.z == vec2.z && vec1.w == vec2.w);
 }
 
 const int DEFAULT_ALLOC = 4;
@@ -253,7 +266,6 @@ namespace MyMtrix
 	MyMtrix::Matrix toMatrix(Vec3f v);
 
 }
-
 
 // MyMtrix::Matrix toMatrix(Vec3f v)
 // {
