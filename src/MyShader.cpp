@@ -121,7 +121,7 @@ Vec3f MyShader::Blinn_Phong_With_ShadowMapping(MyShader::FragmentShader *payload
     }
     else
     {
-        shadow = .3 + .7 * (dpayload->depth_buffer->at(idx) < sb_vec4[2] +43.34f); //  a magic number
+        shadow = .3 + .7 * (dpayload->depth_buffer->at(idx) < sb_vec4[2] +12.34f); //  a magic number
     }
     auto return_color = MyShader::Blinn_Phong(payload);
     for (size_t i = 0; i < 3; ++i)
