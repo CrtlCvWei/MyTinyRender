@@ -132,7 +132,7 @@ bool isInTriangle(Vec2i *pts, const Vec2i &P,const bool MSAA)
     if (MSAA)
         return (coefficient.x >= -0.2 && coefficient.y >= -0.2 && coefficient.z >= -0.2);
     else
-        return (coefficient.x >= -0.1 && coefficient.y >= -0.1 && coefficient.z >= -0.1);
+        return (coefficient.x >= -0. && coefficient.y >= -0. && coefficient.z >= -0.);
 }
 
 bool isInTriangle(Vec3f *pts, const Vec3f &P, const bool MSAA)
@@ -142,7 +142,7 @@ bool isInTriangle(Vec3f *pts, const Vec3f &P, const bool MSAA)
     if (MSAA)
         return (coefficient.x >= thred && coefficient.y >= thred && coefficient.z >= thred);
     else
-        return (coefficient.x >= -0.1f && coefficient.y >= -0.1f && coefficient.z >= -0.1f);
+        return (coefficient.x >= -0.f && coefficient.y >= -0.f && coefficient.z >= -0.f);
 }
 
 void triangle(Vec2i *pts, TGAImage &image, const TGAColor color)
