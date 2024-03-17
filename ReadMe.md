@@ -1,3 +1,5 @@
+# ReadMe
+
 参考了OpenGL渲染管线流程以及项目tinyrender和GAMES101作业代码框架，纯C++构建的软光栅渲染器。
 
 同时还加入了抗锯齿MSAA的小trick(4倍超采样)，可根据指令设置是否开启
@@ -24,7 +26,7 @@ main.exe diablo3 gourand output msaa (开启msaa，不写默认不开启)
 
 !https://github.com/CrtlCvWei/MyTinyRender/blob/master/expample/gouraud1.jpg
 
-![example]([https://github.com/CrtlCvWei/MyTinyRender/blob/master/expample/gouraud2.jpg](https://github.com/CrtlCvWei/MyTinyRender/blob/master/expample/gouraud1.jpg))
+![example](https://github.com/CrtlCvWei/MyTinyRender/blob/master/expample/gouraud2.jpg)
 
 ### Blinn Phong 光照-无阴影
 
@@ -40,7 +42,7 @@ main.exe diablo3 gourand output msaa (开启msaa，不写默认不开启)
 
 !https://github.com/CrtlCvWei/MyTinyRender/blob/master/expample/gouraud1.jpg
 
-![example image]([https://github.com/CrtlCvWei/MyTinyRender/blob/master/expample/shadow2.jpg](https://github.com/CrtlCvWei/MyTinyRender/blob/master/expample/shadow1.jpg))
+![example image](https://github.com/CrtlCvWei/MyTinyRender/blob/master/expample/shadow2.jpg)
 
 ### MSAA o/w
 
