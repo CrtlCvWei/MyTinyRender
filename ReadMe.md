@@ -24,23 +24,19 @@ main.exe diablo3 gourand output msaa (开启msaa，不写默认不开启)
 
 ![example](https://github.com/CrtlCvWei/MyTinyRender/blob/master/expample/gouraud1.jpg)
 
-!https://github.com/CrtlCvWei/MyTinyRender/blob/master/expample/gouraud1.jpg
 
 ![example](https://github.com/CrtlCvWei/MyTinyRender/blob/master/expample/gouraud2.jpg)
 
 ### Blinn Phong 光照-无阴影
 
-![example image]([https://github.com/CrtlCvWei/MyTinyRender/blob/master/expample/blinn2.jpg](https://github.com/CrtlCvWei/MyTinyRender/blob/master/expample/blinn1.jpg))
+![example image](https://github.com/CrtlCvWei/MyTinyRender/blob/master/expample/blinn1.jpg))
 
-!https://github.com/CrtlCvWei/MyTinyRender/blob/master/expample/gouraud1.jpg
-
-![example image](https://github.com/CrtlCvWei/MyTinyRender/blob/master/expample/blinn1.jpg)
+![example image](https://github.com/CrtlCvWei/MyTinyRender/blob/master/expample/blinn2.jpg)
 
 ### Blinn Phong+阴影 ShadowMap
 
 ![example image](https://github.com/CrtlCvWei/MyTinyRender/blob/master/expample/shadow1.jpg)
 
-!https://github.com/CrtlCvWei/MyTinyRender/blob/master/expample/gouraud1.jpg
 
 ![example image](https://github.com/CrtlCvWei/MyTinyRender/blob/master/expample/shadow2.jpg)
 
